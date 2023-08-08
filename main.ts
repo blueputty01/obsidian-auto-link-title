@@ -21,7 +21,10 @@ export default class AutoLinkTitle extends Plugin {
     console.log("loading obsidian-auto-link-title");
     await this.loadSettings();
 
-    this.blacklist = this.settings.websiteBlacklist.split(",").map(s => s.trim()).filter(s => s.length > 0)
+    this.blacklist = this.settings.websiteBlacklist
+      .split(",")
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
 
     // Listen to paste event
     this.pasteFunction = this.pasteUrlWithTitle.bind(this);
@@ -46,7 +49,7 @@ export default class AutoLinkTitle extends Plugin {
     });
 
     this.registerEvent(
-      this.app.workspace.on("editor-paste", this.pasteFunction)
+      this.app.workspace.on("editor-paste", this.pasteFunction),
     );
 
     this.addCommand({
@@ -82,7 +85,6 @@ export default class AutoLinkTitle extends Plugin {
   }
 
   async normalPaste(editor: Editor): Promise<void> {
-
     let clipboardText = await navigator.clipboard.readText();
     if (clipboardText === null || clipboardText === "") return;
 
@@ -91,7 +93,6 @@ export default class AutoLinkTitle extends Plugin {
 
   // Simulate standard paste but using editor.replaceSelection with clipboard text since we can't seem to dispatch a paste event.
   async manualPasteUrlWithTitle(editor: Editor): Promise<void> {
-
     // Only attempt fetch if online
     if (!navigator.onLine) {
       editor.replaceSelection(clipboardText);
@@ -129,7 +130,10 @@ export default class AutoLinkTitle extends Plugin {
     return;
   }
 
-  async pasteUrlWithTitle(clipboard: ClipboardEvent, editor: Editor): Promise<void> {
+  async pasteUrlWithTitle(
+    clipboard: ClipboardEvent,
+    editor: Editor,
+  ): Promise<void> {
     if (!this.settings.enhanceDefaultPaste) {
       return;
     }
@@ -172,8 +176,11 @@ export default class AutoLinkTitle extends Plugin {
 
   async isBlacklisted(url: string): Promise<boolean> {
     await this.loadSettings();
-    this.blacklist = this.settings.websiteBlacklist.split(/,|\n/).map(s => s.trim()).filter(s => s.length > 0)
-    return this.blacklist.some(site => url.contains(site))
+    this.blacklist = this.settings.websiteBlacklist
+      .split(/,|\n/)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+    return this.blacklist.some((site) => url.contains(site));
   }
 
   async convertUrlToTitledLink(editor: Editor, url: string): Promise<void> {
@@ -198,7 +205,7 @@ export default class AutoLinkTitle extends Plugin {
     const start = text.indexOf(pasteId);
     if (start < 0) {
       console.log(
-        `Unable to find text "${pasteId}" in current editor, bailing out; link ${url}`
+        `Unable to find text "${pasteId}" in current editor, bailing out; link ${url}`,
       );
     } else {
       const end = start + pasteId.length;
@@ -210,8 +217,8 @@ export default class AutoLinkTitle extends Plugin {
   }
 
   escapeMarkdown(text: string): string {
-    var unescaped = text.replace(/\\(\*|_|`|~|\\|\[|\])/g, '$1'); // unescape any "backslashed" character
-    var escaped = unescaped.replace(/(\*|_|`|~|\\|\[|\])/g, '\\$1'); // escape *, _, `, ~, \, [, ]
+    var unescaped = text.replace(/\\(\*|_|`|~|\\|\[|\])/g, "$1"); // unescape any "backslashed" character
+    var escaped = unescaped.replace(/(\*|_|`|~|\\|\[|\])/g, "\\$1"); // escape *, _, `, ~, \, [, ]
     return escaped;
   }
 
