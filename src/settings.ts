@@ -1,5 +1,5 @@
-import AutoLinkTitle from "main";
-import { App, PluginSettingTab, Setting } from "obsidian";
+import AutoLinkTitle from 'main';
+import { App, PluginSettingTab, Setting } from 'obsidian';
 
 export interface AutoLinkTitleSettings {
   regex: RegExp;
@@ -24,7 +24,7 @@ export const DEFAULT_SETTINGS: AutoLinkTitleSettings = {
   imageRegex: /\.(gif|jpe?g|tiff?|png|webp|bmp|tga|psd|ai)$/i,
   shouldReplaceSelection: true,
   enhanceDefaultPaste: true,
-  websiteBlacklist: "",
+  websiteBlacklist: '',
 };
 
 export class AutoLinkTitleSettingTab extends PluginSettingTab {
@@ -41,9 +41,9 @@ export class AutoLinkTitleSettingTab extends PluginSettingTab {
     containerEl.empty();
 
     new Setting(containerEl)
-      .setName("Enhance Default Paste")
+      .setName('Enhance Default Paste')
       .setDesc(
-        "Fetch the link title when pasting a link in the editor with the default paste command",
+        'Fetch the link title when pasting a link in the editor with the default paste command'
       )
       .addToggle((val) =>
         val
@@ -52,13 +52,13 @@ export class AutoLinkTitleSettingTab extends PluginSettingTab {
             console.log(value);
             this.plugin.settings.enhanceDefaultPaste = value;
             await this.plugin.saveSettings();
-          }),
+          })
       );
 
     new Setting(containerEl)
-      .setName("Replace Selection")
+      .setName('Replace Selection')
       .setDesc(
-        "Whether to replace a text selection with link and fetched title",
+        'Whether to replace a text selection with link and fetched title'
       )
       .addToggle((val) =>
         val
@@ -67,22 +67,22 @@ export class AutoLinkTitleSettingTab extends PluginSettingTab {
             console.log(value);
             this.plugin.settings.shouldReplaceSelection = value;
             await this.plugin.saveSettings();
-          }),
+          })
       );
 
     new Setting(containerEl)
-      .setName("Website Blacklist")
+      .setName('Website Blacklist')
       .setDesc(
-        "List of strings (comma separated) that disable autocompleting website titles. Can be URLs or arbitrary text.",
+        'List of strings (comma separated) that disable autocompleting website titles. Can be URLs or arbitrary text.'
       )
       .addTextArea((val) =>
         val
           .setValue(this.plugin.settings.websiteBlacklist)
-          .setPlaceholder("localhost, tiktok.com")
+          .setPlaceholder('localhost, tiktok.com')
           .onChange(async (value) => {
             this.plugin.settings.websiteBlacklist = value;
             await this.plugin.saveSettings();
-          }),
+          })
       );
   }
 }
