@@ -14,7 +14,7 @@ if you want to view the source visit the plugins github repository
 */
 `;
 
-const rootPath = process.env.OBSIDIAN_PATH;
+const rootPath = `${process.env.OBSIDIAN_PATH}/obsidian-auto-link-title`;
 
 export default {
   input: './src/main.ts',

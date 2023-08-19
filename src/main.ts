@@ -1,12 +1,12 @@
-import { EditorExtensions } from "editor-enhancements";
-import { Plugin, MarkdownView, Editor } from "obsidian";
+import { EditorExtensions } from 'editor-enhancements';
+import { Plugin, MarkdownView, Editor } from 'obsidian';
 import {
   AutoLinkTitleSettings,
   AutoLinkTitleSettingTab,
   DEFAULT_SETTINGS,
-} from "./settings";
-import { CheckIf } from "checkif";
-import getPageTitle from "scraper";
+} from './settings';
+import { CheckIf } from 'checkif';
+import getPageTitle from 'scraper';
 
 interface PasteFunction {
   (this: HTMLElement, ev: ClipboardEvent): void;
@@ -18,11 +18,11 @@ export default class AutoLinkTitle extends Plugin {
   blacklist: Array<string>;
 
   async onload() {
-    console.log("loading obsidian-auto-link-title");
+    console.log('loading obsidian-auto-link-title');
     await this.loadSettings();
 
     this.blacklist = this.settings.websiteBlacklist
-      .split(",")
+      .split(',')
       .map((s) => s.trim())
       .filter((s) => s.length > 0);
 
@@ -30,36 +30,36 @@ export default class AutoLinkTitle extends Plugin {
     this.pasteFunction = this.pasteUrlWithTitle.bind(this);
 
     this.addCommand({
-      id: "auto-link-title-paste",
-      name: "Paste URL and auto fetch title",
+      id: 'auto-link-title-paste',
+      name: 'Paste URL and auto fetch title',
       editorCallback: (editor) => this.manualPasteUrlWithTitle(editor),
       hotkeys: [],
     });
 
     this.addCommand({
-      id: "auto-link-title-normal-paste",
-      name: "Normal paste (no fetching behavior)",
+      id: 'auto-link-title-normal-paste',
+      name: 'Normal paste (no fetching behavior)',
       editorCallback: (editor) => this.normalPaste(editor),
       hotkeys: [
         {
-          modifiers: ["Mod", "Shift"],
-          key: "v",
+          modifiers: ['Mod', 'Shift'],
+          key: 'v',
         },
       ],
     });
 
     this.registerEvent(
-      this.app.workspace.on("editor-paste", this.pasteFunction),
+      this.app.workspace.on('editor-paste', this.pasteFunction)
     );
 
     this.addCommand({
-      id: "enhance-url-with-title",
-      name: "Enhance existing URL with link and title",
+      id: 'enhance-url-with-title',
+      name: 'Enhance existing URL with link and title',
       editorCallback: (editor) => this.addTitleToLink(editor),
       hotkeys: [
         {
-          modifiers: ["Mod", "Shift"],
-          key: "e",
+          modifiers: ['Mod', 'Shift'],
+          key: 'e',
         },
       ],
     });
@@ -71,7 +71,7 @@ export default class AutoLinkTitle extends Plugin {
     // Only attempt fetch if online
     if (!navigator.onLine) return;
 
-    let selectedText = (EditorExtensions.getSelectedText(editor) || "").trim();
+    let selectedText = (EditorExtensions.getSelectedText(editor) || '').trim();
 
     // If the cursor is on a raw html link, convert to a markdown link and fetch title
     if (CheckIf.isUrl(selectedText)) {
@@ -86,7 +86,7 @@ export default class AutoLinkTitle extends Plugin {
 
   async normalPaste(editor: Editor): Promise<void> {
     let clipboardText = await navigator.clipboard.readText();
-    if (clipboardText === null || clipboardText === "") return;
+    if (clipboardText === null || clipboardText === '') return;
 
     editor.replaceSelection(clipboardText);
   }
@@ -100,7 +100,7 @@ export default class AutoLinkTitle extends Plugin {
     }
 
     var clipboardText = await navigator.clipboard.readText();
-    if (clipboardText == null || clipboardText == "") return;
+    if (clipboardText == null || clipboardText == '') return;
 
     // If its not a URL, we return false to allow the default paste handler to take care of it.
     // Similarly, image urls don't have a meaningful <title> attribute so downloading it
@@ -110,7 +110,7 @@ export default class AutoLinkTitle extends Plugin {
       return;
     }
 
-    let selectedText = (EditorExtensions.getSelectedText(editor) || "").trim();
+    let selectedText = (EditorExtensions.getSelectedText(editor) || '').trim();
     if (selectedText && !this.settings.shouldReplaceSelection) {
       // If there is selected text and shouldReplaceSelection is false, do not fetch title
       editor.replaceSelection(clipboardText);
@@ -132,7 +132,7 @@ export default class AutoLinkTitle extends Plugin {
 
   async pasteUrlWithTitle(
     clipboard: ClipboardEvent,
-    editor: Editor,
+    editor: Editor
   ): Promise<void> {
     if (!this.settings.enhanceDefaultPaste) {
       return;
@@ -141,8 +141,8 @@ export default class AutoLinkTitle extends Plugin {
     // Only attempt fetch if online
     if (!navigator.onLine) return;
 
-    let clipboardText = clipboard.clipboardData.getData("text/plain");
-    if (clipboardText === null || clipboardText === "") return;
+    let clipboardText = clipboard.clipboardData.getData('text/plain');
+    if (clipboardText === null || clipboardText === '') return;
 
     // If its not a URL, we return false to allow the default paste handler to take care of it.
     // Similarly, image urls don't have a meaningful <title> attribute so downloading it
@@ -151,7 +151,7 @@ export default class AutoLinkTitle extends Plugin {
       return;
     }
 
-    let selectedText = (EditorExtensions.getSelectedText(editor) || "").trim();
+    let selectedText = (EditorExtensions.getSelectedText(editor) || '').trim();
     if (selectedText && !this.settings.shouldReplaceSelection) {
       // If there is selected text and shouldReplaceSelection is false, do not fetch title
       return;
@@ -184,10 +184,15 @@ export default class AutoLinkTitle extends Plugin {
   }
 
   async convertUrlToTitledLink(editor: Editor, url: string): Promise<void> {
+    const urlObj = new URL(url);
     if (await this.isBlacklisted(url)) {
-      let domain = new URL(url).hostname;
+      let domain = urlObj.hostname;
       editor.replaceSelection(`[${domain}](${url})`);
       return;
+    }
+
+    if (url.contains('://www.amazon.com')) {
+      url = urlObj.origin + urlObj.pathname;
     }
 
     // Generate a unique id for find/replace operations for the title.
@@ -205,7 +210,7 @@ export default class AutoLinkTitle extends Plugin {
     const start = text.indexOf(pasteId);
     if (start < 0) {
       console.log(
-        `Unable to find text "${pasteId}" in current editor, bailing out; link ${url}`,
+        `Unable to find text "${pasteId}" in current editor, bailing out; link ${url}`
       );
     } else {
       const end = start + pasteId.length;
@@ -217,18 +222,18 @@ export default class AutoLinkTitle extends Plugin {
   }
 
   escapeMarkdown(text: string): string {
-    var unescaped = text.replace(/\\(\*|_|`|~|\\|\[|\])/g, "$1"); // unescape any "backslashed" character
-    var escaped = unescaped.replace(/(\*|_|`|~|\\|\[|\])/g, "\\$1"); // escape *, _, `, ~, \, [, ]
+    var unescaped = text.replace(/\\(\*|_|`|~|\\|\[|\])/g, '$1'); // unescape any "backslashed" character
+    var escaped = unescaped.replace(/(\*|_|`|~|\\|\[|\])/g, '\\$1'); // escape *, _, `, ~, \, [, ]
     return escaped;
   }
 
   async fetchUrlTitle(url: string): Promise<string> {
     try {
       const title = await getPageTitle(url);
-      return title.replace(/(\r\n|\n|\r)/gm, "").trim();
+      return title.replace(/(\r\n|\n|\r)/gm, '').trim();
     } catch (error) {
       // console.error(error)
-      return "Site Unreachable";
+      return 'Site Unreachable';
     }
   }
 
@@ -239,8 +244,8 @@ export default class AutoLinkTitle extends Plugin {
 
   // Custom hashid by @shabegom
   private createBlockHash(): string {
-    let result = "";
-    var characters = "abcdefghijklmnopqrstuvwxyz0123456789";
+    let result = '';
+    var characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
     var charactersLength = characters.length;
     for (var i = 0; i < 4; i++) {
       result += characters.charAt(Math.floor(Math.random() * charactersLength));
@@ -249,7 +254,7 @@ export default class AutoLinkTitle extends Plugin {
   }
 
   onunload() {
-    console.log("unloading obsidian-auto-link-title");
+    console.log('unloading obsidian-auto-link-title');
   }
 
   async loadSettings() {
