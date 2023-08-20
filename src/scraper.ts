@@ -59,10 +59,18 @@ async function nonElectronGetPageTitle(url: string): Promise<string> {
   try {
     const html = await request({ url });
 
-    console.log('error');
-
     const doc = new DOMParser().parseFromString(html, 'text/html');
 
+    // handle pdf
+    if (html.startsWith('%PDF-')) {
+      const title = doc.getElementsByTagName('dc:title').item(0);
+      if (title == null) {
+        return url;
+      }
+      return title.textContent;
+    }
+
+    // handle reddit
     if (
       url.startsWith('https://www.reddit.com') ||
       url.startsWith('https://m.reddit.com')
